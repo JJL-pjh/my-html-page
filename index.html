@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>国之重器 · 数据新闻可视化</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232E6E8E' d='M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z'/%3E%3C/svg%3E">
+<script src="https://fastly.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --ink:#16283A; --paper:#F6F4EF; --steel:#54677A; --line:#DCE2E7;
+  --accent:#B33A2E; --teal:#2E6E8E; --teal-soft:#E4EEF2; --bg:#FFFFFF;
+  --card:#FFFFFF; --shadow:0 1px 3px rgba(22,40,58,.08),0 4px 14px rgba(22,40,58,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;color:var(--ink);background:var(--paper);line-height:1.7}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* Hero */
+.hero{background:var(--ink);color:#F2F5F7;padding:56px 0 40px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(900px 300px at 80% -10%,rgba(46,110,142,.35),transparent 60%);pointer-events:none}
+.hero .wrap{position:relative}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.18em;color:#9FC3D1;margin-bottom:18px}
+.kicker::before{content:"";width:28px;height:2px;background:var(--accent)}
+.hero h1{font-size:30px;line-height:1.35;font-weight:700;max-width:760px}
+.hero p.sub{margin-top:14px;font-size:15px;color:#C6D3DC;max-width:640px}
+.hero .meta{margin-top:20px;font-size:13px;color:#8FA6B3}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:16px}
+.stat .num{font-size:24px;font-weight:700;color:#F2F5F7}
+.stat .lab{font-size:13px;color:#9FC3D1;margin-top:4px}
+
+/* Sections */
+section{padding:42px 0}
+.section-head{margin-bottom:24px}
+.section-head .idx{font-size:13px;color:var(--accent);letter-spacing:.15em;font-weight:700}
+.section-head h2{font-size:22px;margin-top:6px}
+.section-head p.lead{color:var(--steel);font-size:14px;margin-top:8px;max-width:720px}
+
+/* Timeline */
+.timeline{display:grid;grid-template-columns:120px 24px 1fr;gap:0 0;position:relative}
+.tl-item{display:contents}
+.tl-time{font-size:13px;color:var(--steel);padding:14px 12px 14px 0;text-align:right}
+.tl-axis{position:relative;justify-self:center;width:2px;background:var(--line)}
+.tl-dot{width:12px;height:12px;border-radius:50%;background:var(--teal);border:2px solid #fff;box-shadow:0 0 0 2px var(--teal);justify-self:center;margin-top:18px}
+.tl-dot.red{background:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.tl-body{padding:12px 0 12px 16px;border-bottom:1px solid var(--line)}
+.tl-body h3{font-size:15px}
+.tl-body p{font-size:13.5px;color:var(--steel);margin-top:3px}
+
+/* Cards grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.card h3{font-size:16px;margin-bottom:10px}
+.card p{font-size:14px;color:var(--steel)}
+.card .tag{display:inline-block;font-size:12px;color:var(--teal);background:var(--teal-soft);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+
+/* Parameter cards */
+.params{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.param{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+.param .v{font-size:22px;font-weight:700;color:var(--ink)}
+.param .k{font-size:13px;color:var(--steel);margin-top:4px}
+
+/* Charts */
+.chart-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-top:18px}
+.chart-card h3{font-size:15px;margin-bottom:4px}
+.chart-card .note{font-size:12px;color:var(--steel);margin-bottom:10px}
+.chart{width:100%;height:300px}
+
+/* Three columns: cause / problem / action */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.col{border-radius:12px;padding:20px;border:1px solid var(--line);background:#fff}
+.col.cause{border-top:3px solid var(--teal)}
+.col.problem{border-top:3px solid var(--accent)}
+.col.action{border-top:3px solid #C99A3A}
+.col h3{font-size:16px;margin-bottom:14px}
+.col ul{list-style:none}
+.col li{font-size:13.5px;color:var(--steel);padding:8px 0 8px 18px;position:relative;border-bottom:1px dashed var(--line)}
+.col li:last-child{border-bottom:none}
+.col li::before{content:"";position:absolute;left:0;top:16px;width:7px;height:7px;border-radius:2px;background:var(--teal)}
+.col.problem li::before{background:var(--accent)}
+.col.action li::before{background:#C99A3A}
+
+/* Source */
+.src{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px}
+.src ol{padding-left:20px}
+.src li{font-size:13px;color:var(--steel);margin:8px 0}
+.placeholder{margin-top:16px;background:var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--ink)}
+footer{padding:26px 0 40px;color:var(--steel);font-size:12.5px;text-align:center}
+
+@media (max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid,.three,.params{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+  .timeline{grid-template-columns:88px 20px 1fr}
+  .tl-time{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">数据新闻 · 国之重器</span>
+    <h1>从一架战机到一艘邮轮：读懂“国之重器”的进阶之路</h1>
+    <p class="sub">以公开可查的事件与数据为线索，观察我国重大装备在海空、航天、造船领域的进展、背后的支撑力量、待解问题与未来方向。</p>
+    <div class="meta">小组成员：彭俊豪、杨洞烈　｜　选题方向：科技前沿　｜　成稿日期：2026-11-18</div>
+    <div class="stats">
+      <div class="stat"><div class="num">4</div><div class="lab">条重器线索</div></div>
+      <div class="stat"><div class="num">120+</div><div class="lab">神二十在轨任务（项）</div></div>
+      <div class="stat"><div class="num">80%</div><div class="lab">花城号内装材料国产化率</div></div>
+      <div class="stat"><div class="num">341<span style="font-size:13px">米</span></div><div class="lab">国产大型邮轮总长</div></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="idx">01 · 现象</span>
+      <h2>近一年，重器密集亮相</h2>
+      <p class="lead">时间轴按公开报道梳理：从舰载隐身战机的研制节点，到载人飞船返回、月壤研究进展，再到第二艘国产大型邮轮交付。</p>
+    </div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-time">2021-10-29</div><div class="tl-axis"><div class="tl-dot"></div></div><div class="tl-body"><h3>歼-35 验证机首飞</h3><p>由航空工业沈阳飞机设计研究所研制、沈飞公司生产的新型隐身舰载战斗机验证机完成首飞。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2024</div><div class="tl-axis"><div class="tl-dot"></div></div><div class="tl-body"><h3>歼-35 正式列装</h3><p>公开资料显示歼-35 于 2024 年正式列装，采用“一机多型、海空孪生”发展思路。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2024-11-12</div><div class="tl-axis"><div class="tl-dot"></div></div><div class="tl-body"><h3>歼-35A 珠海航展公开亮相</h3><p>空军型歼-35A 在珠海金湾机场完成公开飞行展示；此前已完成福建舰首次弹射起飞和着舰训练。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2025-04-24</div><div class="tl-axis"><div class="tl-dot"></div></div><div class="tl-body"><h3>神舟二十号发射升空</h3><p>航天员陈冬、陈中瑞、王杰进驻天和核心舱，在轨驻留 6 个多月。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2026-01-19</div><div class="tl-axis"><div class="tl-dot red"></div></div><div class="tl-body"><h3>神舟二十号返回舱着陆</h3><p>9 时 34 分在东风着陆场成功着陆，返回舱外观总体正常，返回任务取得圆满成功。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2026-02 / 05 / 07</div><div class="tl-axis"><div class="tl-dot"></div></div><div class="tl-body"><h3>嫦娥六号月背样品持续产出成果</h3><p>先后修正月球撞击坑年代学模型、揭示小行星类型长期变化、揭示地球磁层“调速器”效应。</p></div></div>
+      <div class="tl-item"><div class="tl-time">2026-11-06</div><div class="tl-axis"><div class="tl-dot red"></div></div><div class="tl-body"><h3>爱达·花城号在上海交付</h3><p>第二艘国产大型邮轮交付，标志国产大型邮轮从单船突破迈入系列化建造新阶段。</p></div></div>
+    </div>
+
+    <div class="grid" style="margin-top:28px">
+      <div class="card">
+        <span class="tag">海空装备</span>
+        <h3>歼-35：舰载与陆基孪生发展</h3>
+        <p>海军型歼-35 用于舰载，空军型歼-35A 用于陆基，两者可通过机翼等外形特征区分。战机背后是覆盖气动、结构、材料、电子、制造的庞大团队接力攻关。</p>
+      </div>
+      <div class="card">
+        <span class="tag">载人航天</span>
+        <h3>神舟二十号：六个月在轨任务</h3>
+        <p>乘组完成多次出舱与气闸舱任务，承担 120 余项空间站建设、升级、维护与维修工作，返回舱安全着陆。</p>
+      </div>
+      <div class="card">
+        <span class="tag">深空探测</span>
+        <h3>嫦娥六号：月壤里的新线索</h3>
+        <p>月球背面样品研究陆续修正年代学模型、揭示小行星类型变化与太阳风差异机制，相关结论仍需更多实验与模拟验证。</p>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>图 1　神舟二十号在轨任务构成</h3>
+      <div class="note">口径提示：“出舱活动”“气闸舱进出舱”以次数计，“建设/升级/维护/维修任务”以项计，三类口径不同，不可直接相加比较。数据来源：中国载人航天工程办公室。</div>
+      <div id="chart-sz20" class="chart"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>图 2　爱达·花城号关键参数</h3>
+      <div class="note">数据来源：新华社、央视网、人民日报客户端 2026-11-06 交付报道；保额来自保险机构公开披露。</div>
+      <div class="params">
+        <div class="param"><div class="v">14.19 万吨</div><div class="k">总吨位</div></div>
+        <div class="param"><div class="v">341 米</div><div class="k">总长</div></div>
+        <div class="param"><div class="v">2130 间</div><div class="k">客房数量</div></div>
+        <div class="param"><div class="v">5232 人</div><div class="k">满载最大载客量</div></div>
+        <div class="param"><div class="v">54 亿元</div><div class="k">船舶相关保险保额</div></div>
+        <div class="param"><div class="v">80%</div><div class="k">内装工程材料国产化率</div></div>
+      </div>
+      <div id="chart-local" class="chart" style="height:220px"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="idx">02 · 原因 · 问题 · 对策</span>
+      <h2>进阶背后的支撑、短板与建议</h2>
+      <p class="lead">同一时期集中突破依赖工业体系与长期投入；面向未来，仍需在关键环节、公众传播、数据开放与成果转化上持续改进。</p>
+    </div>
+    <div class="three">
+      <div class="col cause">
+        <h3>原因：依靠什么成长</h3>
+        <ul>
+          <li>完整工业体系：材料、零部件到总装集成形成协同链条</li>
+          <li>长期科研投入与预研积累：基础研究、试验验证先行</li>
+          <li>产学研协同与人才梯队：院校输送与团队接续传承</li>
+          <li>任务牵引：空间站、航母配套、邮轮升级提供应用场景</li>
+        </ul>
+      </div>
+      <div class="col problem">
+        <h3>问题：仍待破解的课题</h3>
+        <ul>
+          <li>高端材料、精密元器件、试验设备与工业软件存在依赖风险</li>
+          <li>专业话语与公众认知存在落差，易出现夸张解读</li>
+          <li>可公开核验的数据分散，第三方研究获取成本较高</li>
+          <li>工程经验向民用产业转化的机制仍需优化</li>
+        </ul>
+      </div>
+      <div class="col action">
+        <h3>对策：面向未来的建议</h3>
+        <ul>
+          <li>补强基础研究与关键环节，建设开放共享试验平台</li>
+          <li>完善工程教育，联合培养复合型青年人才</li>
+          <li>用数据新闻与可视化报道讲清技术背景与风险边界</li>
+          <li>在保密前提下分层发布可对比的统计口径与数据集</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="idx">03 · 数据来源与口径</span>
+      <h2>来源标注与待补说明</h2>
+    </div>
+    <div class="src">
+      <ol>
+        <li>歼-35 研制与列装信息：新华网客户端、央视网、光明网公开报道；具体技术参数以官方披露为准。</li>
+        <li>神舟二十号任务数据：中国载人航天工程办公室官网（cmse.gov.cn），2026-01-19 返回通报、2026-01-21 功勋奖章通报。</li>
+        <li>嫦娥六号样品研究成果：中国科学院官网转载光明日报、央视新闻报道（2026-02、2026-05、2026-07）；月壤磁性矿物新发现为公开报道，结论待同行评议与后续实验确认。</li>
+        <li>爱达·花城号参数：新华社、央视网、人民日报客户端 2026-11-06 交付报道；保额信息来自保险机构公开披露。</li>
+        <li>人物口径：杨伟为歼-20 总设计师，并非歼-35 总设计师；文中人物信息仅用于航空装备行业背景说明。</li>
+      </ol>
+      <div class="placeholder">
+        待补数据：话题热度走势拟取自百度指数（index.baidu.com）与抖音指数 / 巨量算数（trendinsight.oceanengine.com）的相对趋势。本轮未登录平台截取，页面不虚构热度数值；小组后续可在上述平台检索“歼-35”“神舟二十号”“嫦娥六号”“爱达·花城号”等关键词，补充近 90 天相对热度折线图。
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>国之重器 · 数据新闻可视化版本　｜　彭俊豪、杨洞烈　｜　数据均来自公开渠道，引用请以官方发布口径为准</footer>
+
+<script>
+(function(){
+  var palette = {teal:'#2E6E8E', accent:'#B33A2E', steel:'#54677A', soft:'#E4EEF2', line:'#DCE2E7'};
+
+  function init(id, option){
+    var el = document.getElementById(id);
+    if(!el || typeof echarts === 'undefined') return;
+    var chart = echarts.init(el);
+    chart.setOption(option);
+    window.addEventListener('resize', function(){ chart.resize(); });
+  }
+
+  init('chart-sz20', {
+    grid: {left: 150, right: 40, top: 20, bottom: 30},
+    tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
+    xAxis: {type: 'value', axisLine: {lineStyle: {color: palette.line}}, splitLine: {lineStyle: {color: palette.line}}},
+    yAxis: {type: 'category', data: ['建设/升级/维护/维修任务（项）', '气闸舱进出舱（次）', '出舱活动（次）'], axisLine: {lineStyle: {color: palette.line}}, axisLabel: {color: palette.steel, fontSize: 12}},
+    series: [{
+      type: 'bar',
+      data: [120, 7, 4],
+      barWidth: 22,
+      itemStyle: {color: palette.teal, borderRadius: [0, 4, 4, 0]},
+      label: {show: true, position: 'right', color: palette.ink, fontWeight: 600, formatter: function(p){ return p.value + (p.dataIndex === 0 ? ' 余项' : ' 次'); }}
+    }]
+  });
+
+  init('chart-local', {
+    grid: {left: 130, right: 40, top: 10, bottom: 30},
+    tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}, formatter: function(ps){ var p=ps[0]; return p.name + '：' + p.value + '%'; }},
+    xAxis: {type: 'value', max: 100, axisLabel: {formatter: '{value}%', color: palette.steel}, splitLine: {lineStyle: {color: palette.line}}},
+    yAxis: {type: 'category', data: ['内装工程材料'], axisLabel: {color: palette.steel}},
+    series: [
+      {name: '国产化材料', type: 'bar', stack: 'total', data: [80], barWidth: 26, itemStyle: {color: palette.teal}, label: {show: true, formatter: '80%', color: '#fff', fontWeight: 600}},
+      {name: '其他', type: 'bar', stack: 'total', data: [20], barWidth: 26, itemStyle: {color: palette.soft}, label: {show: true, formatter: '20%', color: palette.steel}}
+    ]
+  });
+})();
+</script>
+</body>
+</html>
